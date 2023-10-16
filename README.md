@@ -12,7 +12,7 @@ The Flip Buildings Mod allows you to horizontally flip any building on your farm
 Select either the Robin's or the Wizard's construction menu, and then click the flip button (↹) to access a view of your farm. From there, you can choose a building to flip.
 
 ## Accessibility
-English and French translations are included in the base mod, and contributions are welcome. To contribute, please submit a pull request on the [GitHub repository](https://github.com/mouahrara/FlipBuildings/pulls).  
+English, French, German (thanks to CoolRabbit123) and Russian (thanks to theRealDuda) translations are included in the base mod, and contributions are welcome. To contribute, please submit a pull request on the [GitHub repository](https://github.com/mouahrara/FlipBuildings/pulls).  
 Note that this mod has controller support.
 
 ## Multiplayer
