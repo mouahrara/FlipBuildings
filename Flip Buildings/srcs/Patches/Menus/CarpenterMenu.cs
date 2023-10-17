@@ -22,6 +22,10 @@ namespace FlipBuildings.Patches
 		internal static void Apply(Harmony harmony)
 		{
 			harmony.Patch(
+				original: AccessTools.PropertySetter(typeof(CarpenterMenu), nameof(CarpenterMenu.readOnly)),
+				postfix: new HarmonyMethod(typeof(CarpenterMenuPatch), nameof(ReadOnlyPostfix))
+			);
+			harmony.Patch(
 				original: AccessTools.Method(typeof(CarpenterMenu), nameof(CarpenterMenu.draw), new Type[] { typeof(SpriteBatch) }),
 				prefix: new HarmonyMethod(typeof(CarpenterMenuPatch), nameof(DrawPrefix))
 			);
@@ -45,6 +49,14 @@ namespace FlipBuildings.Patches
 				original: AccessTools.Method(typeof(CarpenterMenu), nameof(CarpenterMenu.returnToCarpentryMenu)),
 				postfix: new HarmonyMethod(typeof(CarpenterMenuPatch), nameof(ReturnToCarpentryMenuPostfix))
 			);
+		}
+
+		private static void ReadOnlyPostfix(ref bool value)
+		{
+			if (value)
+			{
+				flipButton.visible = false;
+			}
 		}
 
 		private static bool DrawPrefix(CarpenterMenu __instance, SpriteBatch b)
