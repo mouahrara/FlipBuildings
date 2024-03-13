@@ -7,26 +7,26 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Buildings;
 using FlipBuildings.Utilities;
 
-namespace FlipBuildings.Patches.AT
+namespace FlipBuildings.Patches
 {
-	internal class StablePatch
+	internal class PetBowlPatch
 	{
 		internal static void Apply(Harmony harmony)
 		{
 			harmony.Patch(
-				original: AccessTools.Method(CompatibilityHelper.StablePatchType, "DrawPrefix"),
-				transpiler: new HarmonyMethod(typeof(StablePatch), nameof(DrawPrefixTranspiler))
+				original: AccessTools.Method(typeof(PetBowl), nameof(PetBowl.draw), new Type[] { typeof(SpriteBatch) }),
+				transpiler: new HarmonyMethod(typeof(PetBowlPatch), nameof(DrawTranspiler))
 			);
 		}
 
-		private static IEnumerable<CodeInstruction> DrawPrefixTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator iLGenerator)
+		private static IEnumerable<CodeInstruction> DrawTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator iLGenerator)
 		{
 			PatchHelper.CodeReplacement[] codeReplacements = new PatchHelper.CodeReplacement[]
 			{
 				new(
-					instanceType: typeof(Stable),
+					// Flip water texture (Actually, offset its position)
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
-					offset: 15,
+					offset: 2,
 					targetInstruction: new(OpCodes.Ldc_I4_0),
 					replacementInstructions: new CodeInstruction[]
 					{
@@ -34,7 +34,7 @@ namespace FlipBuildings.Patches.AT
 					}
 				)
 			};
-			return PatchHelper.ReplaceInstructionsByOffsets(instructions, iLGenerator, codeReplacements, CompatibilityHelper.StablePatchType, "DrawPrefix");
+			return PatchHelper.ReplaceInstructionsByOffsets(instructions, iLGenerator, codeReplacements, typeof(PetBowl), nameof(PetBowl.draw));
 		}
 	}
 }

@@ -4,14 +4,16 @@ using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
 using StardewModdingAPI;
+using StardewValley.Mods;
 
 namespace FlipBuildings.Utilities
 {
 	internal class PatchHelper
 	{
 		internal class CodeReplacement {
-			internal readonly CodeInstruction[]		instanceInstructions;
+			internal readonly string				modDataKey;
 			internal readonly Type					instanceType;
+			internal readonly CodeInstruction[]		instanceInstructions;
 			internal readonly CodeInstruction[]		referenceInstructions;
 			internal readonly byte					offset;
 			internal readonly bool					isNegativeOffset;
@@ -21,10 +23,11 @@ namespace FlipBuildings.Utilities
 			internal readonly bool					goNext;
 			internal readonly bool					skip;
 
-			public CodeReplacement(CodeInstruction[] instanceInstructions = null, Type instanceType = null, CodeInstruction[] referenceInstructions = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false)
+			public CodeReplacement(string modDataKey = null, Type instanceType = null, CodeInstruction[] instanceInstructions = null, CodeInstruction[] referenceInstructions = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false)
 			{
-				this.instanceInstructions = instanceInstructions ?? new CodeInstruction[] { new(OpCodes.Ldarg_0) };
+				this.modDataKey = modDataKey ?? ModDataKeys.FLIPPED;
 				this.instanceType = instanceType;
+				this.instanceInstructions = instanceInstructions ?? new CodeInstruction[] { new(OpCodes.Ldarg_0) };
 				this.referenceInstructions = referenceInstructions ?? Array.Empty<CodeInstruction>();
 				this.offset = offset;
 				this.isNegativeOffset = isNegativeOffset;
@@ -35,7 +38,7 @@ namespace FlipBuildings.Utilities
 				this.skip = skip;
 			}
 
-			public CodeReplacement(CodeInstruction[] instanceInstructions = null, Type instanceType = null, CodeInstruction referenceInstruction = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false): this(instanceInstructions, instanceType, new CodeInstruction[] { referenceInstruction }, offset, isNegativeOffset, targetInstruction, checkOperand, replacementInstructions, goNext, skip)
+			public CodeReplacement(string modDataKey = null, Type instanceType = null, CodeInstruction[] instanceInstructions = null, CodeInstruction referenceInstruction = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false): this(modDataKey, instanceType, instanceInstructions, new CodeInstruction[] { referenceInstruction }, offset, isNegativeOffset, targetInstruction, checkOperand, replacementInstructions, goNext, skip)
 			{
 			}
 		}
@@ -46,10 +49,12 @@ namespace FlipBuildings.Utilities
 			{
 				int n = 0;
 				List<CodeInstruction> list = instructions.ToList();
+
 				for (int i = 0; i < list.Count; i++)
 				{
 					bool found = true;
-					for (int j = 0; j < CodeReplacements[n].referenceInstructions.Count(); i++, j++)
+
+					for (int j = 0; j < CodeReplacements[n].referenceInstructions.Length; i++, j++)
 					{
 						if (i >= list.Count || !list[i].opcode.Equals(CodeReplacements[n].referenceInstructions[j].opcode) || (list[i].operand is not null && !list[i].operand.Equals(CodeReplacements[n].referenceInstructions[j].operand)))
 						{
@@ -59,13 +64,16 @@ namespace FlipBuildings.Utilities
 						}
 					}
 					if (!found)
+					{
 						continue;
+					}
 					i--;
 					if (CodeReplacements[n].skip)
 					{
 						n++;
 						continue;
 					}
+
 					int offset = (CodeReplacements[n].isNegativeOffset ? -1 : 1) * CodeReplacements[n].offset;
 					int targetIndex = i + offset;
 
@@ -74,16 +82,20 @@ namespace FlipBuildings.Utilities
 						Label[] labels = Enumerable.Range(0, 2).Select(_ => iLGenerator.DefineLabel()).ToArray();
 						List<CodeInstruction> codeInstructions = new() { };
 
-						for (int k = 0; k < CodeReplacements[n].instanceInstructions.Count(); k++)
+						for (int k = 0; k < CodeReplacements[n].instanceInstructions.Length; k++)
+						{
 							codeInstructions.Add(new(CodeReplacements[n].instanceInstructions[k].opcode, CodeReplacements[n].instanceInstructions[k].operand) { labels = k == 0 ? list[targetIndex].labels : null });
+						}
 
-						codeInstructions.Add(new(OpCodes.Ldfld, (CodeReplacements[n].instanceType ?? type).GetField("modData")));
-						codeInstructions.Add(new(OpCodes.Ldstr, ModDataKeys.FLIPPED));
-						codeInstructions.Add(new(OpCodes.Callvirt, typeof(StardewValley.ModDataDictionary).GetMethod(nameof(StardewValley.ModDataDictionary.ContainsKey))));
+						codeInstructions.Add(new(OpCodes.Call, (CodeReplacements[n].instanceType ?? type).GetProperty("modData").GetGetMethod()));
+						codeInstructions.Add(new(OpCodes.Ldstr, CodeReplacements[n].modDataKey));
+						codeInstructions.Add(new(OpCodes.Callvirt, typeof(ModDataDictionary).GetMethod(nameof(ModDataDictionary.ContainsKey))));
 						codeInstructions.Add(new(OpCodes.Brfalse_S, labels[0]));
 
-						for (int l = 0; l < CodeReplacements[n].replacementInstructions.Count(); l++)
+						for (int l = 0; l < CodeReplacements[n].replacementInstructions.Length; l++)
+						{
 							codeInstructions.Add(new(CodeReplacements[n].replacementInstructions[l].opcode, CodeReplacements[n].replacementInstructions[l].operand));
+						}
 
 						codeInstructions.Add(new(OpCodes.Br_S, labels[1]));
 						codeInstructions.Add(new(list[targetIndex].opcode, list[targetIndex].operand) { labels = { labels[0] } });
@@ -94,14 +106,17 @@ namespace FlipBuildings.Utilities
 						list.RemoveAt(i + offset);
 
 						if (!CodeReplacements[n].goNext)
+						{
 							i-= 2;
-
+						}
 						n++;
-						if (n == CodeReplacements.Count())
+						if (n == CodeReplacements.Length)
+						{
 							break;
+						}
 					}
 				}
-				ModEntry.Monitor.Log($"{type.Name}.{name}: {n}/{CodeReplacements.Count()} patches", LogLevel.Trace);
+				ModEntry.Monitor.Log($"{type.Name}.{name}: {n}/{CodeReplacements.Length} patches", LogLevel.Trace);
 				return list;
 			}
 			catch (Exception e)

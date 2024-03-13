@@ -1,8 +1,9 @@
 ﻿using System;
 using HarmonyLib;
 using StardewModdingAPI;
-using FlipBuildings.Patches;
+using FlipBuildings.Handlers;
 using FlipBuildings.Managers;
+using FlipBuildings.Patches;
 using FlipBuildings.Utilities;
 
 namespace FlipBuildings
@@ -35,16 +36,11 @@ namespace FlipBuildings
 
 				// Apply building patches
 				BuildingPatch.Apply(harmony);
-				CoopPatch.Apply(harmony);
-				GreenhouseBuildingPatch.Apply(harmony);
-				StablePatch.Apply(harmony);
-				JunimoHutPatch.Apply(harmony);
 				FishPondPatch.Apply(harmony);
-				MillPatch.Apply(harmony);
-				BarnPatch.Apply(harmony);
+				JunimoHutPatch.Apply(harmony);
+				PetBowlPatch.Apply(harmony);
 
 				// Apply location patches
-				FarmPatch.Apply(harmony);
 				FarmHousePatch.Apply(harmony);
 
 				// Apply character patches
@@ -53,15 +49,14 @@ namespace FlipBuildings
 				// Apply AlternativeTextures patches
 				if (CompatibilityHelper.IsAlternativeTexturesLoaded)
 				{
-					Patches.AT.FarmPatch.Apply(harmony);
-					Patches.AT.StablePatch.Apply(harmony);
+					Patches.AT.BuildingPatch.Apply(harmony);
 				}
 
 				// Apply SolidFoundations patches
-				if (CompatibilityHelper.IsSolidFoundationsLoaded)
-				{
-					Patches.SF.GenericBuildingPatch.Apply(harmony);
-				}
+				// if (CompatibilityHelper.IsSolidFoundationsLoaded)
+				// {
+				// 	Patches.SF.GenericBuildingPatch.Apply(harmony);
+				// }
 			}
 			catch (Exception e)
 			{
@@ -69,11 +64,8 @@ namespace FlipBuildings
 				return;
 			}
 
-			// Hook into the required events
-			Helper.Events.GameLoop.SaveLoaded += Hooks.SaveLoaded.Apply;
-			Helper.Events.GameLoop.DayStarted += Hooks.DayStarted.Apply;
-			Helper.Events.GameLoop.DayEnding += Hooks.DayEnding.Apply;
-			Helper.Events.Multiplayer.ModMessageReceived += Hooks.ModMessageReceived.Apply;
+			// Subscribe to events
+			Helper.Events.GameLoop.GameLaunched += GameLaunchedHandler.Apply;
 		}
 	}
 }
