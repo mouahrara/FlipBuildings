@@ -44,12 +44,12 @@ namespace FlipBuildings.Patches
 			if (!__instance.modData.ContainsKey(ModDataKeys.FLIPPED))
 				return;
 
-			__result = BuildingDataHelper.GetFlippedData(__instance);
+			__result = BuildingDataUtility.GetFlippedData(__instance);
 		}
 
 		private static IEnumerable<CodeInstruction> DrawTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator iLGenerator)
 		{
-			PatchHelper.CodeReplacement[] codeReplacements = new PatchHelper.CodeReplacement[]
+			PatchUtility.CodeReplacement[] codeReplacements = new PatchUtility.CodeReplacement[]
 			{
 				new(
 					// Flip building texture
@@ -195,12 +195,12 @@ namespace FlipBuildings.Patches
 					}
 				)
 			};
-			return PatchHelper.ReplaceInstructionsByOffsets(instructions, iLGenerator, codeReplacements, typeof(Building), nameof(Building.draw));
+			return PatchUtility.ReplaceInstructionsByOffsets(instructions, iLGenerator, codeReplacements, typeof(Building), nameof(Building.draw));
 		}
 
 		private static IEnumerable<CodeInstruction> DrawShadowTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator iLGenerator)
 		{
-			PatchHelper.CodeReplacement[] codeReplacements = new PatchHelper.CodeReplacement[]
+			PatchUtility.CodeReplacement[] codeReplacements = new PatchUtility.CodeReplacement[]
 			{
 				new(
 					// Replace left shadow with right shadow
@@ -255,12 +255,12 @@ namespace FlipBuildings.Patches
 					}
 				)
 			};
-			return PatchHelper.ReplaceInstructionsByOffsets(instructions, iLGenerator, codeReplacements, typeof(Building), nameof(Building.drawShadow));
+			return PatchUtility.ReplaceInstructionsByOffsets(instructions, iLGenerator, codeReplacements, typeof(Building), nameof(Building.drawShadow));
 		}
 
 		private static IEnumerable<CodeInstruction> DrawBackgroundTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator iLGenerator)
 		{
-			PatchHelper.CodeReplacement[] codeReplacements = new PatchHelper.CodeReplacement[]
+			PatchUtility.CodeReplacement[] codeReplacements = new PatchUtility.CodeReplacement[]
 			{
 				new(
 					// Flip background texture
@@ -273,7 +273,7 @@ namespace FlipBuildings.Patches
 					}
 				)
 			};
-			return PatchHelper.ReplaceInstructionsByOffsets(instructions, iLGenerator, codeReplacements, typeof(Building), nameof(Building.drawBackground));
+			return PatchUtility.ReplaceInstructionsByOffsets(instructions, iLGenerator, codeReplacements, typeof(Building), nameof(Building.drawBackground));
 		}
 
 		private static void GetPorchStandingSpotPostfix(Building __instance, ref Point __result)

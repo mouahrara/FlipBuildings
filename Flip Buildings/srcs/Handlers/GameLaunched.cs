@@ -10,7 +10,7 @@ namespace FlipBuildings.Handlers
 		/// <param name="e">The event data.</param>
 		internal static void Apply(object sender, GameLaunchedEventArgs e)
 		{
-			BuildingDataHelper.LoadContent();
+			BuildingDataUtility.LoadContent();
 		}
 	}
 }

@@ -2,7 +2,7 @@
 
 namespace FlipBuildings.Utilities
 {
-	internal class CompatibilityHelper
+	internal class CompatibilityUtility
 	{
 		internal static readonly bool IsAlternativeTexturesLoaded = ModEntry.Helper.ModRegistry.IsLoaded("PeacefulEnd.AlternativeTextures");
 		internal static readonly bool IsSolidFoundationsLoaded = ModEntry.Helper.ModRegistry.IsLoaded("PeacefulEnd.SolidFoundations");
