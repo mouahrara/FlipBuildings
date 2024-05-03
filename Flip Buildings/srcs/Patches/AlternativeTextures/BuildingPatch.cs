@@ -24,7 +24,6 @@ namespace FlipBuildings.Patches.AT
 			PatchUtility.CodeReplacement[] codeReplacements = new PatchUtility.CodeReplacement[]
 			{
 				new(
-					instanceType: typeof(Building),
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
 					offset: 15,
 					targetInstruction: new(OpCodes.Ldc_I4_0),

@@ -48,7 +48,7 @@ namespace FlipBuildings.Patches.SF
 				prefix: new HarmonyMethod(typeof(BuildingManagerPatch), nameof(BuildingManagerPatch.WrapPrefixInstance))
 			);
 			harmony.Patch(
-				original: AccessTools.Method(CompatibilityUtility.SFBuildingPatchType, "DayUpdatePostfix", new Type[] { typeof(Building), typeof(int)  }),
+				original: AccessTools.Method(CompatibilityUtility.SFBuildingPatchType, "DayUpdatePostfix", new Type[] { typeof(Building), typeof(int) }),
 				postfix: new HarmonyMethod(typeof(BuildingManagerPatch), nameof(BuildingManagerPatch.WrapPostfix))
 			);
 			harmony.Patch(

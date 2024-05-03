@@ -24,7 +24,6 @@ namespace FlipBuildings.Patches
 			PatchUtility.CodeReplacement[] codeReplacements = new PatchUtility.CodeReplacement[]
 			{
 				new(
-					instanceType: typeof(Building),
 					instanceInstructions: new CodeInstruction[]
 					{
 						new(OpCodes.Ldloc_1),

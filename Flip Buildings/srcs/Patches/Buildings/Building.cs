@@ -62,7 +62,28 @@ namespace FlipBuildings.Patches
 					}
 				),
 				new(
-					// Offset hour hand position (Gold Clock)
+					// Offset hourglass position (Gold Clock turned off)
+					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
+					offset: 41,
+					targetInstruction: new(OpCodes.Ldc_I4_S, (sbyte)68),
+					replacementInstructions: new CodeInstruction[]
+					{
+						new(OpCodes.Ldc_I4_S, (sbyte)72)
+					},
+					goNext: false
+				),
+				new(
+					// Flip hourglass texture (Gold Clock turned off)
+					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
+					offset: 15,
+					targetInstruction: new(OpCodes.Ldc_I4_0),
+					replacementInstructions: new CodeInstruction[]
+					{
+						new(OpCodes.Ldc_I4_1)
+					}
+				),
+				new(
+					// Offset hour hand position (Gold Clock turned on)
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
 					offset: 57,
 					targetInstruction: new(OpCodes.Ldc_I4_S, (sbyte)92),
@@ -73,7 +94,7 @@ namespace FlipBuildings.Patches
 					goNext: false
 				),
 				new(
-					// Reverse hour hand rotation (Gold Clock)
+					// Reverse hour hand rotation (Gold Clock turned on)
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
 					offset: 20,
 					targetInstruction: new(OpCodes.Conv_R4),
@@ -86,7 +107,7 @@ namespace FlipBuildings.Patches
 					goNext: false
 				),
 				new(
-					// Flip hour hand texture (Gold Clock)
+					// Flip hour hand texture (Gold Clock turned on)
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
 					offset: 15,
 					targetInstruction: new(OpCodes.Ldc_I4_0),
@@ -96,7 +117,7 @@ namespace FlipBuildings.Patches
 					}
 				),
 				new(
-					// Offset minute hand position (Gold Clock)
+					// Offset minute hand position (Gold Clock turned on)
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
 					offset: 61,
 					targetInstruction: new(OpCodes.Ldc_I4_S, (sbyte)92),
@@ -107,7 +128,7 @@ namespace FlipBuildings.Patches
 					goNext: false
 				),
 				new(
-					// Reverse minute hand rotation (Gold Clock)
+					// Reverse minute hand rotation (Gold Clock turned on)
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
 					offset: 20,
 					targetInstruction: new(OpCodes.Conv_R4),
@@ -120,7 +141,7 @@ namespace FlipBuildings.Patches
 					goNext: false
 				),
 				new(
-					// Flip minute hand texture (Gold Clock)
+					// Flip minute hand texture (Gold Clock turned on)
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
 					offset: 15,
 					targetInstruction: new(OpCodes.Ldc_I4_0),
@@ -130,7 +151,7 @@ namespace FlipBuildings.Patches
 					}
 				),
 				new(
-					// Offset clock nub position (Gold Clock)
+					// Offset clock nub position (Gold Clock turned on)
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
 					offset: 39,
 					targetInstruction: new(OpCodes.Ldc_I4_S, (sbyte)92),
@@ -141,7 +162,7 @@ namespace FlipBuildings.Patches
 					goNext: false
 				),
 				new(
-					// Flip clock nub texture (Gold Clock)
+					// Flip clock nub texture (Gold Clock turned on)
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
 					offset: 15,
 					targetInstruction: new(OpCodes.Ldc_I4_0),

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using HarmonyLib;
 using StardewModdingAPI;
+using StardewValley.Buildings;
 using StardewValley.Mods;
 
 namespace FlipBuildings.Utilities
@@ -12,7 +13,6 @@ namespace FlipBuildings.Utilities
 	{
 		internal class CodeReplacement {
 			internal readonly string				modDataKey;
-			internal readonly Type					instanceType;
 			internal readonly CodeInstruction[]		instanceInstructions;
 			internal readonly CodeInstruction[]		referenceInstructions;
 			internal readonly byte					offset;
@@ -24,10 +24,9 @@ namespace FlipBuildings.Utilities
 			internal readonly bool					goNext;
 			internal readonly bool					skip;
 
-			public CodeReplacement(string modDataKey = null, Type instanceType = null, CodeInstruction[] instanceInstructions = null, CodeInstruction[] referenceInstructions = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, int instructionsToReplace = 1, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false)
+			public CodeReplacement(string modDataKey = null, CodeInstruction[] instanceInstructions = null, CodeInstruction[] referenceInstructions = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, int instructionsToReplace = 1, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false)
 			{
 				this.modDataKey = modDataKey ?? ModDataKeys.FLIPPED;
-				this.instanceType = instanceType;
 				this.instanceInstructions = instanceInstructions ?? new CodeInstruction[] { new(OpCodes.Ldarg_0) };
 				this.referenceInstructions = referenceInstructions ?? Array.Empty<CodeInstruction>();
 				this.offset = offset;
@@ -40,7 +39,7 @@ namespace FlipBuildings.Utilities
 				this.skip = skip;
 			}
 
-			public CodeReplacement(string modDataKey = null, Type instanceType = null, CodeInstruction[] instanceInstructions = null, CodeInstruction referenceInstruction = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, int instructionsToReplace = 1, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false): this(modDataKey, instanceType, instanceInstructions, new CodeInstruction[] { referenceInstruction }, offset, isNegativeOffset, targetInstruction, instructionsToReplace, checkOperand, replacementInstructions, goNext, skip)
+			public CodeReplacement(string modDataKey = null, CodeInstruction[] instanceInstructions = null, CodeInstruction referenceInstruction = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, int instructionsToReplace = 1, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false): this(modDataKey, instanceInstructions, new CodeInstruction[] { referenceInstruction }, offset, isNegativeOffset, targetInstruction, instructionsToReplace, checkOperand, replacementInstructions, goNext, skip)
 			{
 			}
 		}
@@ -89,7 +88,7 @@ namespace FlipBuildings.Utilities
 							codeInstructions.Add(new(CodeReplacements[n].instanceInstructions[k].opcode, CodeReplacements[n].instanceInstructions[k].operand) { labels = k == 0 ? list[targetIndex].labels : null });
 						}
 
-						codeInstructions.Add(new(OpCodes.Call, (CodeReplacements[n].instanceType ?? type).GetProperty("modData").GetGetMethod()));
+						codeInstructions.Add(new(OpCodes.Call, typeof(Building).GetProperty("modData").GetGetMethod()));
 						codeInstructions.Add(new(OpCodes.Ldstr, CodeReplacements[n].modDataKey));
 						codeInstructions.Add(new(OpCodes.Callvirt, typeof(ModDataDictionary).GetMethod(nameof(ModDataDictionary.ContainsKey))));
 						codeInstructions.Add(new(OpCodes.Brfalse_S, labels[0]));
