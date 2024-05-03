@@ -9,13 +9,13 @@ using FlipBuildings.Utilities;
 
 namespace FlipBuildings.Patches.AT
 {
-	internal class BuildingPatch
+	internal class BuildingPatchPatch
 	{
 		internal static void Apply(Harmony harmony)
 		{
 			harmony.Patch(
-				original: AccessTools.Method(CompatibilityUtility.BuildingPatchType, "DrawPrefix"),
-				transpiler: new HarmonyMethod(typeof(BuildingPatch), nameof(DrawPrefixTranspiler))
+				original: AccessTools.Method(CompatibilityUtility.ATBuildingPatchType, "DrawPrefix"),
+				transpiler: new HarmonyMethod(typeof(BuildingPatchPatch), nameof(DrawPrefixTranspiler))
 			);
 		}
 
@@ -34,7 +34,7 @@ namespace FlipBuildings.Patches.AT
 					}
 				)
 			};
-			return PatchUtility.ReplaceInstructionsByOffsets(instructions, iLGenerator, codeReplacements, CompatibilityUtility.BuildingPatchType, "DrawPrefix");
+			return PatchUtility.ReplaceInstructionsByOffsets(instructions, iLGenerator, codeReplacements, CompatibilityUtility.ATBuildingPatchType, "DrawPrefix");
 		}
 	}
 }

@@ -18,12 +18,13 @@ namespace FlipBuildings.Utilities
 			internal readonly byte					offset;
 			internal readonly bool					isNegativeOffset;
 			internal readonly CodeInstruction		targetInstruction;
+			internal readonly int					instructionsToReplace;
 			internal readonly bool					checkOperand;
 			internal readonly CodeInstruction[]		replacementInstructions;
 			internal readonly bool					goNext;
 			internal readonly bool					skip;
 
-			public CodeReplacement(string modDataKey = null, Type instanceType = null, CodeInstruction[] instanceInstructions = null, CodeInstruction[] referenceInstructions = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false)
+			public CodeReplacement(string modDataKey = null, Type instanceType = null, CodeInstruction[] instanceInstructions = null, CodeInstruction[] referenceInstructions = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, int instructionsToReplace = 1, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false)
 			{
 				this.modDataKey = modDataKey ?? ModDataKeys.FLIPPED;
 				this.instanceType = instanceType;
@@ -31,14 +32,15 @@ namespace FlipBuildings.Utilities
 				this.referenceInstructions = referenceInstructions ?? Array.Empty<CodeInstruction>();
 				this.offset = offset;
 				this.isNegativeOffset = isNegativeOffset;
-				this.targetInstruction = targetInstruction ?? new CodeInstruction(OpCodes.Nop);
+				this.targetInstruction = targetInstruction;
+				this.instructionsToReplace = instructionsToReplace;
 				this.checkOperand = checkOperand;
 				this.replacementInstructions = replacementInstructions ?? Array.Empty<CodeInstruction>();
 				this.goNext = goNext;
 				this.skip = skip;
 			}
 
-			public CodeReplacement(string modDataKey = null, Type instanceType = null, CodeInstruction[] instanceInstructions = null, CodeInstruction referenceInstruction = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false): this(modDataKey, instanceType, instanceInstructions, new CodeInstruction[] { referenceInstruction }, offset, isNegativeOffset, targetInstruction, checkOperand, replacementInstructions, goNext, skip)
+			public CodeReplacement(string modDataKey = null, Type instanceType = null, CodeInstruction[] instanceInstructions = null, CodeInstruction referenceInstruction = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, int instructionsToReplace = 1, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false): this(modDataKey, instanceType, instanceInstructions, new CodeInstruction[] { referenceInstruction }, offset, isNegativeOffset, targetInstruction, instructionsToReplace, checkOperand, replacementInstructions, goNext, skip)
 			{
 			}
 		}
@@ -77,7 +79,7 @@ namespace FlipBuildings.Utilities
 					int offset = (CodeReplacements[n].isNegativeOffset ? -1 : 1) * CodeReplacements[n].offset;
 					int targetIndex = i + offset;
 
-					if (targetIndex >= 0 && targetIndex < list.Count && list[targetIndex].opcode.Equals(CodeReplacements[n].targetInstruction.opcode) && (!CodeReplacements[n].checkOperand || list[targetIndex].operand is null && CodeReplacements[n].targetInstruction.operand is null || list[targetIndex].operand is not null && list[targetIndex].operand.Equals(CodeReplacements[n].targetInstruction.operand)))
+					if (targetIndex >= 0 && targetIndex < list.Count && (CodeReplacements[n].targetInstruction is null || (list[targetIndex].opcode.Equals(CodeReplacements[n].targetInstruction.opcode) && (!CodeReplacements[n].checkOperand || list[targetIndex].operand is null && CodeReplacements[n].targetInstruction.operand is null || list[targetIndex].operand is not null && list[targetIndex].operand.Equals(CodeReplacements[n].targetInstruction.operand)))))
 					{
 						Label[] labels = Enumerable.Range(0, 2).Select(_ => iLGenerator.DefineLabel()).ToArray();
 						List<CodeInstruction> codeInstructions = new() { };
@@ -103,7 +105,7 @@ namespace FlipBuildings.Utilities
 
 						list.InsertRange(targetIndex, codeInstructions);
 						i+= codeInstructions.Count;
-						list.RemoveAt(i + offset);
+						list.RemoveRange(i + offset, CodeReplacements[n].instructionsToReplace);
 
 						if (!CodeReplacements[n].goNext)
 						{

@@ -49,14 +49,19 @@ namespace FlipBuildings
 				// Apply AlternativeTextures patches
 				if (CompatibilityUtility.IsAlternativeTexturesLoaded)
 				{
-					Patches.AT.BuildingPatch.Apply(harmony);
+					Patches.AT.BuildingPatchPatch.Apply(harmony);
 				}
 
 				// Apply SolidFoundations patches
-				// if (CompatibilityUtility.IsSolidFoundationsLoaded)
-				// {
-				// 	Patches.SF.GenericBuildingPatch.Apply(harmony);
-				// }
+				if (CompatibilityUtility.IsSolidFoundationsLoaded)
+				{
+					Patches.SF.SolidFoundationsPatch.Apply(harmony);
+					Patches.SF.BuildingManagerPatch.Apply(harmony);
+					Patches.SF.LightManagerPatch.Apply(harmony);
+					Patches.SF.BuildingPatchPatch.Apply(harmony);
+					Patches.SF.BuildingExtensionsPatch.Apply(harmony);
+					Patches.SF.SpecialActionPatch.Apply(harmony);
+				}
 			}
 			catch (Exception e)
 			{
@@ -66,6 +71,8 @@ namespace FlipBuildings
 
 			// Subscribe to events
 			Helper.Events.GameLoop.GameLaunched += GameLaunchedHandler.Apply;
+			Helper.Events.GameLoop.UpdateTicked += UpdateTickedHandler.Apply;
+			Helper.Events.Content.AssetReady += AssetReadyHandler.Apply;
 		}
 	}
 }
