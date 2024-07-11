@@ -26,7 +26,7 @@ namespace FlipBuildings.Patches
 		{
 			if (__instance.GetType() == typeof(CarpenterMenu))
 			{
-				__instance.allClickableComponents.Add(CarpenterMenuPatch.flipButton);
+				__instance.allClickableComponents.Add(CarpenterMenuPatch.FlipButton);
 			}
 		}
 
@@ -49,7 +49,7 @@ namespace FlipBuildings.Patches
 			{
 				return true;
 			}
-			if (CarpenterMenuPatch.flipping)
+			if (CarpenterMenuPatch.Flipping)
 			{
 				Vector2 tile = new((Game1.viewport.X + Game1.getOldMouseX(ui_scale: false)) / 64, (Game1.viewport.Y + Game1.getOldMouseY(ui_scale: false)) / 64);
 				Building buildingAt = carpenterMenu.TargetLocation.getBuildingAt(tile);

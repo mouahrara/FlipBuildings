@@ -11,14 +11,27 @@ using StardewValley.Buildings;
 using StardewValley.GameData.Buildings;
 using FlipBuildings.Managers;
 using FlipBuildings.Utilities;
+using StardewModdingAPI.Utilities;
 
 namespace FlipBuildings.Patches
 {
 	internal class CarpenterMenuPatch
 	{
-		private const int 							region_flipButton = 110;
-		internal static ClickableTextureComponent	flipButton;
-		internal static bool						flipping;
+		private const int 												region_flipButton = 110;
+		private static readonly PerScreen<ClickableTextureComponent>	flipButton = new(() => null);
+		private static readonly PerScreen<bool>							flipping = new(() => false);
+
+		internal static ClickableTextureComponent FlipButton
+		{
+			get => flipButton.Value;
+			set => flipButton.Value = value;
+		}
+
+		internal static bool Flipping
+		{
+			get => flipping.Value;
+			set => flipping.Value = value;
+		}
 
 		internal static void Apply(Harmony harmony)
 		{
@@ -50,13 +63,18 @@ namespace FlipBuildings.Patches
 				original: AccessTools.Method(typeof(CarpenterMenu), nameof(CarpenterMenu.returnToCarpentryMenu)),
 				postfix: new HarmonyMethod(typeof(CarpenterMenuPatch), nameof(ReturnToCarpentryMenuPostfix))
 			);
+			harmony.Patch(
+				original: AccessTools.Method(typeof(CarpenterMenu), "resetBounds"),
+				prefix: new HarmonyMethod(typeof(CarpenterMenuPatch), nameof(ResetBoundsPrefix)),
+				postfix: new HarmonyMethod(typeof(CarpenterMenuPatch), nameof(ResetBoundsPostfix))
+			);
 		}
 
 		private static void ReadOnlyPostfix(ref bool value)
 		{
 			if (value)
 			{
-				flipButton.visible = false;
+				FlipButton.visible = false;
 			}
 		}
 
@@ -69,7 +87,7 @@ namespace FlipBuildings.Patches
 
 			if (__instance.onFarm)
 			{
-				if (flipping)
+				if (Flipping)
 				{
 					string hoverText = (string)typeof(CarpenterMenu).GetField("hoverText", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
 					string s = ModEntry.Helper.Translation.Get("Carpenter_SelectBuilding_Flip");
@@ -101,7 +119,7 @@ namespace FlipBuildings.Patches
 			{
 				string hoverText = (string)typeof(CarpenterMenu).GetField("hoverText", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
 
-				flipButton.draw(b);
+				FlipButton.draw(b);
 				__instance.drawMouse(b);
 				if (__instance.GetChildMenu() == null)
 				{
@@ -119,7 +137,7 @@ namespace FlipBuildings.Patches
 			__instance.backButton.myID = CarpenterMenu.region_backButton;
 			__instance.forwardButton.myID = CarpenterMenu.region_forwardButton;
 			__instance.appearanceButton.myID = CarpenterMenu.region_appearanceButton;
-			flipButton = new ClickableTextureComponent("Flip", new Rectangle(__instance.xPositionOnScreen + __instance.width - IClickableMenu.borderWidth - IClickableMenu.spaceToClearSideBorder - 384 - 20, __instance.yPositionOnScreen + __instance.maxHeightOfBuildingViewer + 64, 64, 64), null, null, AssetManager.flipButton, new Rectangle(0, 0, 16, 16), 4f)
+			FlipButton = new ClickableTextureComponent("Flip", new Rectangle(__instance.xPositionOnScreen + __instance.width - IClickableMenu.borderWidth - IClickableMenu.spaceToClearSideBorder - 384 - 20, __instance.yPositionOnScreen + __instance.maxHeightOfBuildingViewer + 64, 64, 64), null, null, AssetManager.flipButton, new Rectangle(0, 0, 16, 16), 4f)
 			{
 				myID = region_flipButton,
 				rightNeighborID = CarpenterMenu.region_paintButton,
@@ -139,10 +157,10 @@ namespace FlipBuildings.Patches
 			__instance.forwardButton.leftNeighborID = __instance.backButton.myID;
 			__instance.forwardButton.rightNeighborID = __instance.appearanceButton.myID;
 			__instance.appearanceButton.leftNeighborID = __instance.forwardButton.myID;
-			__instance.appearanceButton.rightNeighborID = flipButton.myID;
-			flipButton.leftNeighborID = __instance.appearanceButton.myID;
-			flipButton.rightNeighborID = __instance.paintButton.myID;
-			__instance.paintButton.leftNeighborID = flipButton.myID;
+			__instance.appearanceButton.rightNeighborID = FlipButton.myID;
+			FlipButton.leftNeighborID = __instance.appearanceButton.myID;
+			FlipButton.rightNeighborID = __instance.paintButton.myID;
+			__instance.paintButton.leftNeighborID = FlipButton.myID;
 			__instance.paintButton.rightNeighborID = __instance.moveButton.myID;
 			__instance.moveButton.leftNeighborID = __instance.paintButton.myID;
 			__instance.moveButton.rightNeighborID = __instance.okButton.myID;
@@ -155,46 +173,51 @@ namespace FlipBuildings.Patches
 			__instance.cancelButton.leftNeighborID = __instance.demolishButton.myID;
 			__instance.cancelButton.rightNeighborID = -1;
 
-			if (!__instance.appearanceButton.visible && !flipButton.visible && !__instance.paintButton.visible && !__instance.moveButton.visible)
+			if (!__instance.paintButton.visible && !__instance.moveButton.visible && !__instance.okButton.visible && !__instance.demolishButton.visible)
+			{
+				FlipButton.visible = false;
+			}
+
+			if (!__instance.appearanceButton.visible && !FlipButton.visible && !__instance.paintButton.visible && !__instance.moveButton.visible)
 			{
 				__instance.forwardButton.rightNeighborID = __instance.okButton.myID;
 				__instance.okButton.leftNeighborID = __instance.forwardButton.myID;
 			}
-			else if (!flipButton.visible && !__instance.paintButton.visible && !__instance.moveButton.visible)
+			else if (!FlipButton.visible && !__instance.paintButton.visible && !__instance.moveButton.visible)
 			{
 				__instance.appearanceButton.rightNeighborID = __instance.okButton.myID;
 				__instance.okButton.leftNeighborID = __instance.appearanceButton.myID;
 			}
 			else if (!__instance.appearanceButton.visible && !__instance.paintButton.visible && !__instance.moveButton.visible)
 			{
-				__instance.forwardButton.rightNeighborID = flipButton.myID;
-				flipButton.leftNeighborID = __instance.forwardButton.myID;
-				flipButton.rightNeighborID = __instance.okButton.myID;
-				__instance.okButton.leftNeighborID = flipButton.myID;
+				__instance.forwardButton.rightNeighborID = FlipButton.myID;
+				FlipButton.leftNeighborID = __instance.forwardButton.myID;
+				FlipButton.rightNeighborID = __instance.okButton.myID;
+				__instance.okButton.leftNeighborID = FlipButton.myID;
 			}
-			else if (!__instance.appearanceButton.visible && !flipButton.visible && !__instance.moveButton.visible)
+			else if (!__instance.appearanceButton.visible && !FlipButton.visible && !__instance.moveButton.visible)
 			{
 				__instance.forwardButton.rightNeighborID = __instance.paintButton.myID;
 				__instance.paintButton.leftNeighborID = __instance.forwardButton.myID;
 				__instance.paintButton.rightNeighborID = __instance.okButton.myID;
 				__instance.okButton.leftNeighborID = __instance.paintButton.myID;
 			}
-			else if (!__instance.appearanceButton.visible && !flipButton.visible && !__instance.paintButton.visible)
+			else if (!__instance.appearanceButton.visible && !FlipButton.visible && !__instance.paintButton.visible)
 			{
 				__instance.forwardButton.rightNeighborID = __instance.moveButton.myID;
 				__instance.moveButton.leftNeighborID = __instance.forwardButton.myID;
 			}
 			else if (!__instance.paintButton.visible && !__instance.moveButton.visible)
 			{
-				flipButton.rightNeighborID = __instance.okButton.myID;
-				__instance.okButton.leftNeighborID = flipButton.myID;
+				FlipButton.rightNeighborID = __instance.okButton.myID;
+				__instance.okButton.leftNeighborID = FlipButton.myID;
 			}
-			else if (!flipButton.visible && !__instance.paintButton.visible)
+			else if (!FlipButton.visible && !__instance.paintButton.visible)
 			{
 				__instance.appearanceButton.rightNeighborID = __instance.moveButton.myID;
 				__instance.moveButton.leftNeighborID = __instance.appearanceButton.myID;
 			}
-			else if (!__instance.appearanceButton.visible && !flipButton.visible)
+			else if (!__instance.appearanceButton.visible && !FlipButton.visible)
 			{
 				__instance.forwardButton.rightNeighborID = __instance.paintButton.myID;
 				__instance.paintButton.leftNeighborID = __instance.forwardButton.myID;
@@ -208,18 +231,18 @@ namespace FlipBuildings.Patches
 				}
 				else if (!__instance.paintButton.visible)
 				{
-					flipButton.rightNeighborID = __instance.moveButton.myID;
-					__instance.moveButton.leftNeighborID = flipButton.myID;
+					FlipButton.rightNeighborID = __instance.moveButton.myID;
+					__instance.moveButton.leftNeighborID = FlipButton.myID;
 				}
-				if (!flipButton.visible)
+				if (!FlipButton.visible)
 				{
 					__instance.appearanceButton.rightNeighborID = __instance.paintButton.myID;
 					__instance.paintButton.leftNeighborID = __instance.appearanceButton.myID;
 				}
 				else if (!__instance.appearanceButton.visible)
 				{
-					__instance.forwardButton.rightNeighborID = flipButton.myID;
-					flipButton.leftNeighborID = __instance.forwardButton.myID;
+					__instance.forwardButton.rightNeighborID = FlipButton.myID;
+					FlipButton.leftNeighborID = __instance.forwardButton.myID;
 				}
 			}
 			if (!__instance.demolishButton.visible)
@@ -233,8 +256,8 @@ namespace FlipBuildings.Patches
 		{
 			if (!__instance.onFarm)
 			{
-				flipButton.tryHover(x, y);
-				if (flipButton.containsPoint(x, y))
+				FlipButton.tryHover(x, y);
+				if (FlipButton.containsPoint(x, y))
 				{
 					typeof(CarpenterMenu).GetField("hoverText", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(__instance, (string)ModEntry.Helper.Translation.Get("Carpenter_Flip"));
 					return false;
@@ -242,7 +265,7 @@ namespace FlipBuildings.Patches
 			}
 			else
 			{
-				if ((!__instance.upgrading && !__instance.demolishing && !__instance.moving && !__instance.painting && !flipping) || __instance.freeze)
+				if ((!__instance.upgrading && !__instance.demolishing && !__instance.moving && !__instance.painting && !Flipping) || __instance.freeze)
 				{
 					return false;
 				}
@@ -264,7 +287,7 @@ namespace FlipBuildings.Patches
 						building = null;
 					}
 				}
-				if (flipping)
+				if (Flipping)
 				{
 					if (building != null)
 					{
@@ -288,19 +311,19 @@ namespace FlipBuildings.Patches
 			}
 			if (!__instance.onFarm)
 			{
-				if (flipButton.containsPoint(x, y) && flipButton.visible)
+				if (FlipButton.containsPoint(x, y) && FlipButton.visible)
 				{
 					Game1.globalFadeToBlack(__instance.setUpForBuildingPlacement);
 					Game1.playSound("smallSelect");
 					__instance.onFarm = true;
-					flipping = true;
+					Flipping = true;
 				}
 			}
 			if (!__instance.onFarm || __instance.freeze || Game1.IsFading())
 			{
 				return true;
 			}
-			if (flipping)
+			if (Flipping)
 			{
 				Vector2 tile = new((Game1.viewport.X + Game1.getOldMouseX(ui_scale: false)) / 64, (Game1.viewport.Y + Game1.getOldMouseY(ui_scale: false)) / 64);
 				Building buildingAt = __instance.TargetLocation.getBuildingAt(tile);
@@ -313,7 +336,28 @@ namespace FlipBuildings.Patches
 
 		private static void ReturnToCarpentryMenuPostfix()
 		{
-			flipping = false;
+			Flipping = false;
+		}
+
+		private static void ResetBoundsPrefix(CarpenterMenu __instance, ref (bool, bool, bool, bool, bool, bool)? __state)
+		{
+			if (__instance.upgradeIcon is not null && __instance.demolishButton is not null && __instance.moveButton is not null && __instance.okButton is not null && __instance.paintButton is not null && FlipButton is not null)
+			{
+				__state = (__instance.upgradeIcon.visible, __instance.demolishButton.visible, __instance.moveButton.visible, __instance.okButton.visible, __instance.paintButton.visible, FlipButton.visible);
+			}
+		}
+
+		private static void ResetBoundsPostfix(CarpenterMenu __instance, (bool, bool, bool, bool, bool, bool)? __state)
+		{
+			if (__state.HasValue)
+			{
+				__instance.upgradeIcon.visible = __state.Value.Item1;
+				__instance.demolishButton.visible = __state.Value.Item2;
+				__instance.moveButton.visible = __state.Value.Item3;
+				__instance.okButton.visible = __state.Value.Item4;
+				__instance.paintButton.visible = __state.Value.Item5;
+				FlipButton.visible = __state.Value.Item6;
+			}
 		}
 	}
 }
