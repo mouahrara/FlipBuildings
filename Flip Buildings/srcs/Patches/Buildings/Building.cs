@@ -212,7 +212,7 @@ namespace FlipBuildings.Patches
 					targetInstruction: new(OpCodes.Ldc_I4_0),
 					replacementInstructions: new CodeInstruction[]
 					{
-						 new(OpCodes.Ldc_I4_1)
+						new(OpCodes.Ldc_I4_1)
 					}
 				)
 			};

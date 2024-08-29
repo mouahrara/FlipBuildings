@@ -17,7 +17,7 @@ namespace FlipBuildings.Patches
 {
 	internal class CarpenterMenuPatch
 	{
-		private const int 												region_flipButton = 110;
+		private const int												region_flipButton = 110;
 		private static readonly PerScreen<ClickableTextureComponent>	flipButton = new(() => null);
 		private static readonly PerScreen<bool>							flipping = new(() => false);
 
@@ -265,7 +265,7 @@ namespace FlipBuildings.Patches
 			}
 			else
 			{
-				if ((!__instance.upgrading && !__instance.demolishing && !__instance.moving && !__instance.painting && !Flipping) || __instance.freeze)
+				if ((__instance.Action == CarpenterMenu.CarpentryAction.None && !Flipping) || __instance.freeze)
 				{
 					return false;
 				}
