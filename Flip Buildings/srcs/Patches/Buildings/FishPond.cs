@@ -132,7 +132,7 @@ namespace FlipBuildings.Patches
 					}
 				),
 				new(
-					// Offset occupant count (Counter)
+					// Offset occupant count position (Counter)
 					referenceInstruction: new(OpCodes.Call, typeof(Utility).GetMethod(nameof(Utility.drawTinyDigits))),
 					offset: 44,
 					targetInstruction: new(OpCodes.Add),
@@ -267,6 +267,20 @@ namespace FlipBuildings.Patches
 					// Offset item color position (Chest)
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
 					offset: 17,
+					targetInstruction: new(OpCodes.Call, typeof(Game1).GetMethod(nameof(Game1.GlobalToLocal), new Type[] { typeof(xTile.Dimensions.Rectangle), typeof(Vector2) })),
+					replacementInstructions: new CodeInstruction[]
+					{
+						new(OpCodes.Ldc_R4, 272f),
+						new(OpCodes.Ldc_R4, 0f),
+						new(OpCodes.Newobj, typeof(Vector2).GetConstructor(new Type[] { typeof(float), typeof(float) })),
+						new(OpCodes.Call, typeof(Vector2).GetMethod(nameof(Vector2.Subtract), new Type[] { typeof(Vector2), typeof(Vector2) })),
+						new(OpCodes.Call, typeof(Game1).GetMethod(nameof(Game1.GlobalToLocal), new Type[] { typeof(xTile.Dimensions.Rectangle), typeof(Vector2) }))
+					}
+				),
+				new(
+					// Offset item count position (Chest)
+					referenceInstruction: new(OpCodes.Call, typeof(Utility).GetMethod(nameof(Utility.drawTinyDigits))),
+					offset: 9,
 					targetInstruction: new(OpCodes.Call, typeof(Game1).GetMethod(nameof(Game1.GlobalToLocal), new Type[] { typeof(xTile.Dimensions.Rectangle), typeof(Vector2) })),
 					replacementInstructions: new CodeInstruction[]
 					{

@@ -40,7 +40,7 @@ namespace FlipBuildings.Patches
 					targetInstruction: new(OpCodes.Add),
 					replacementInstructions: new CodeInstruction[]
 					{
- 						new(OpCodes.Add),
+						new(OpCodes.Add),
 						new(OpCodes.Ldc_I4, 148),
 						new(OpCodes.Sub)
 					},
