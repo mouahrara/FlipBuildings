@@ -110,7 +110,7 @@ namespace FlipBuildings.Patches
 				new(
 					// Offset item shadow position (Counter)
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
-					offset: 46,
+					offset: 48,
 					targetInstruction: new(OpCodes.Sub),
 					replacementInstructions: new CodeInstruction[]
 					{
@@ -122,7 +122,7 @@ namespace FlipBuildings.Patches
 				new(
 					// Offset item position (Counter)
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
-					offset: 45,
+					offset: 47,
 					targetInstruction: new(OpCodes.Sub),
 					replacementInstructions: new CodeInstruction[]
 					{
