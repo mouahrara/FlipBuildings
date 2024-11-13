@@ -28,7 +28,7 @@ namespace FlipBuildings
 			// Load Harmony patches
 			try
 			{
-				var harmony = new Harmony(ModManifest.UniqueID);
+				Harmony harmony = new(ModManifest.UniqueID);
 
 				// Apply menu patches
 				IClickableMenuPatch.Apply(harmony);
@@ -41,6 +41,7 @@ namespace FlipBuildings
 				PetBowlPatch.Apply(harmony);
 
 				// Apply location patches
+				FarmPatch.Apply(harmony);
 				FarmHousePatch.Apply(harmony);
 
 				// Apply character patches

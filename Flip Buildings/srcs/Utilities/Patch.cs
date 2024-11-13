@@ -12,8 +12,7 @@ namespace FlipBuildings.Utilities
 	internal class PatchUtility
 	{
 		internal class CodeReplacement {
-			internal readonly string				modDataKey;
-			internal readonly CodeInstruction[]		instanceInstructions;
+			internal readonly CodeInstruction[]		conditionInstructions;
 			internal readonly CodeInstruction[]		referenceInstructions;
 			internal readonly byte					offset;
 			internal readonly bool					isNegativeOffset;
@@ -24,10 +23,14 @@ namespace FlipBuildings.Utilities
 			internal readonly bool					goNext;
 			internal readonly bool					skip;
 
-			public CodeReplacement(string modDataKey = null, CodeInstruction[] instanceInstructions = null, CodeInstruction[] referenceInstructions = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, int instructionsToReplace = 1, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false)
+			public CodeReplacement(CodeInstruction[] conditionInstructions = null, CodeInstruction[] referenceInstructions = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, int instructionsToReplace = 1, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false)
 			{
-				this.modDataKey = modDataKey ?? ModDataKeys.FLIPPED;
-				this.instanceInstructions = instanceInstructions ?? new CodeInstruction[] { new(OpCodes.Ldarg_0) };
+				this.conditionInstructions = conditionInstructions ?? new CodeInstruction[] {
+					new(OpCodes.Ldarg_0),
+					new(OpCodes.Call, typeof(Building).GetProperty("modData").GetGetMethod()),
+					new(OpCodes.Ldstr, ModDataKeys.FLIPPED),
+					new(OpCodes.Callvirt, typeof(ModDataDictionary).GetMethod(nameof(ModDataDictionary.ContainsKey)))
+				};
 				this.referenceInstructions = referenceInstructions ?? Array.Empty<CodeInstruction>();
 				this.offset = offset;
 				this.isNegativeOffset = isNegativeOffset;
@@ -39,7 +42,7 @@ namespace FlipBuildings.Utilities
 				this.skip = skip;
 			}
 
-			public CodeReplacement(string modDataKey = null, CodeInstruction[] instanceInstructions = null, CodeInstruction referenceInstruction = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, int instructionsToReplace = 1, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false): this(modDataKey, instanceInstructions, new CodeInstruction[] { referenceInstruction }, offset, isNegativeOffset, targetInstruction, instructionsToReplace, checkOperand, replacementInstructions, goNext, skip)
+			public CodeReplacement(CodeInstruction[] conditionInstructions = null, CodeInstruction referenceInstruction = null, byte offset = 0, bool isNegativeOffset = true, CodeInstruction targetInstruction = null, int instructionsToReplace = 1, bool checkOperand = true, CodeInstruction[] replacementInstructions = null, bool goNext = true, bool skip = false): this(conditionInstructions, new CodeInstruction[] { referenceInstruction }, offset, isNegativeOffset, targetInstruction, instructionsToReplace, checkOperand, replacementInstructions, goNext, skip)
 			{
 			}
 		}
@@ -83,29 +86,21 @@ namespace FlipBuildings.Utilities
 						Label[] labels = Enumerable.Range(0, 2).Select(_ => iLGenerator.DefineLabel()).ToArray();
 						List<CodeInstruction> codeInstructions = new() { };
 
-						for (int k = 0; k < CodeReplacements[n].instanceInstructions.Length; k++)
+						for (int k = 0; k < CodeReplacements[n].conditionInstructions.Length; k++)
 						{
-							codeInstructions.Add(new(CodeReplacements[n].instanceInstructions[k].opcode, CodeReplacements[n].instanceInstructions[k].operand) { labels = k == 0 ? list[targetIndex].labels : null });
+							codeInstructions.Add(new(CodeReplacements[n].conditionInstructions[k].opcode, CodeReplacements[n].conditionInstructions[k].operand) { labels = k == 0 ? CodeReplacements[n].conditionInstructions[k].labels.Concat(list[targetIndex].labels).ToList() : CodeReplacements[n].conditionInstructions[k].labels });
 						}
-
-						codeInstructions.Add(new(OpCodes.Call, typeof(Building).GetProperty("modData").GetGetMethod()));
-						codeInstructions.Add(new(OpCodes.Ldstr, CodeReplacements[n].modDataKey));
-						codeInstructions.Add(new(OpCodes.Callvirt, typeof(ModDataDictionary).GetMethod(nameof(ModDataDictionary.ContainsKey))));
 						codeInstructions.Add(new(OpCodes.Brfalse_S, labels[0]));
-
 						for (int l = 0; l < CodeReplacements[n].replacementInstructions.Length; l++)
 						{
 							codeInstructions.Add(new(CodeReplacements[n].replacementInstructions[l].opcode, CodeReplacements[n].replacementInstructions[l].operand));
 						}
-
 						codeInstructions.Add(new(OpCodes.Br_S, labels[1]));
 						codeInstructions.Add(new(list[targetIndex].opcode, list[targetIndex].operand) { labels = { labels[0] } });
 						codeInstructions.Add(new(OpCodes.Nop) { labels = { labels[1] } });
-
 						list.InsertRange(targetIndex, codeInstructions);
 						i+= codeInstructions.Count;
 						list.RemoveRange(i + offset, CodeReplacements[n].instructionsToReplace);
-
 						if (!CodeReplacements[n].goNext)
 						{
 							i-= 2;

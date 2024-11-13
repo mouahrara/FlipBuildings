@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Buildings;
 using StardewValley.GameData.Buildings;
+using StardewValley.Mods;
 using FlipBuildings.Utilities;
 
 namespace FlipBuildings.Patches
@@ -34,6 +35,10 @@ namespace FlipBuildings.Patches
 			harmony.Patch(
 				original: AccessTools.Method(typeof(Building), nameof(Building.getPorchStandingSpot)),
 				postfix: new HarmonyMethod(typeof(BuildingPatch), nameof(GetPorchStandingSpotPostfix))
+			);
+			harmony.Patch(
+				original: AccessTools.Method(typeof(Building), nameof(Building.getMailboxPosition)),
+				postfix: new HarmonyMethod(typeof(BuildingPatch), nameof(GetMailboxPositionPostfix))
 			);
 		}
 
@@ -206,7 +211,13 @@ namespace FlipBuildings.Patches
 				),
 				new(
 					// Flip texture (drawLayer)
-					modDataKey: ModDataKeys.FLIPPED_DRAWLAYERS,
+					conditionInstructions: new CodeInstruction[]
+					{
+						new(OpCodes.Ldarg_0),
+						new(OpCodes.Call, typeof(Building).GetProperty("modData").GetGetMethod()),
+						new(OpCodes.Ldstr, ModDataKeys.FLIPPED_DRAWLAYERS),
+						new(OpCodes.Callvirt, typeof(ModDataDictionary).GetMethod(nameof(ModDataDictionary.ContainsKey)))
+					},
 					referenceInstruction: new(OpCodes.Callvirt, typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new Type[] { typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color), typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) })),
 					offset: 2,
 					targetInstruction: new(OpCodes.Ldc_I4_0),
@@ -305,6 +316,17 @@ namespace FlipBuildings.Patches
 			if (__instance.isCabin)
 			{
 				__result = new Point(__instance.tileX.Value + __instance.tilesWide.Value - 1 - 1, __instance.tileY.Value + __instance.tilesHigh.Value - 1);
+			}
+		}
+
+		private static void GetMailboxPositionPostfix(Building __instance, ref Point __result)
+		{
+			if (!__instance.modData.ContainsKey(ModDataKeys.FLIPPED))
+				return;
+
+			if (__instance.isCabin)
+			{
+				__result = new Point(__instance.tileX.Value, __instance.tileY.Value + __instance.tilesHigh.Value - 1);
 			}
 		}
 	}
