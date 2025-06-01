@@ -1,0 +1,7 @@
+﻿{
+	"Carpenter_Flip": "건물 반전",
+	"Carpenter_SelectBuilding_Flip": "반전 시킬 건물을 선택합니다.",
+	"Carpenter_CannotFlip": "이 건물은 반전 시킬 수 없습니다.",
+	"Carpenter_CannotFlip_Permission": "당신은 이 건물을 반전 시킬 권한이 없습니다.",
+	"Carpenter_CannotFlip_PlayerHere": "플레이어가 건물에 있는 동안에는 반전 시킬 수 없습니다."
+}
